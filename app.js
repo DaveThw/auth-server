@@ -97,6 +97,7 @@ app.use(cookieParser());
 
 // parse json body
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 // check for JWT cookie from requestor
 // if there is a valid JWT, req.user is assigned
@@ -128,6 +129,7 @@ app.get('/login', (req, res) => {
   // user not logged in, show login interface
   return res.render('login', {
     referer: requestUri ? `${host}/${requestUri}` : '/',
+    fail: req.query.status === 'fail',
   });
 });
 
@@ -167,6 +169,7 @@ app.get('/auth', (req, res, next) => {
 app.post('/login', apiLimiter, (req, res) => {
   console.log("post /login - ", req.body);
   const { username, password } = req.body;
+  const form = req.get('content-type') === 'application/x-www-form-urlencoded'
 
   if (checkAuth(username, password)) {
     // successful auth
@@ -183,7 +186,14 @@ app.post('/login', apiLimiter, (req, res) => {
       maxAge: 1000 * 86400 * expiryDays, // milliseconds
       secure: cookieSecure,
     });
+    if (form) {
+      return res.redirect('/login')
+    }
     return res.send({ status: 'ok' });
+  }
+
+  if (form) {
+    return res.redirect('/login?status=fail')
   }
 
   // failed auth
