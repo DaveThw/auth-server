@@ -70,8 +70,9 @@ app.post('/manage', (req, res) => {
   if (!user) return res.redirect('/login');
   if (!user.groups.includes('admin')) return res.redirect('/logged-in');
   if (req.body['action'] === 'delete') {
-    if (req.body['user']) {
-      users.delete(req.body['user']);
+    const target = users.get(req.body['user']);
+    if (target && !target.groups.includes('admin')) {
+      users.delete(target.name);
       writeUsers(users);
     }
   } else if (req.body['action'] === 'add') {
