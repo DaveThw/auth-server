@@ -13,20 +13,25 @@ It can be used for protecting web sites with NGINX subrequest authentication.
 
 ## How to use
 
-Refer to this tutorial on my blog:
+Refer to this tutorial on the original author's blog:
 
 <https://gock.net/blog/2020/nginx-subrequest-authentication-server/>
 
 ## Configure `.env`
 
 - `AUTH_PORT` -  Listening port of application (default: 3000)
-- `AUTH_PASSWORD` - Authentication password
+- `AUTH_PASSWORD` - Authentication password (fallback if username/password authentication doesn't work)
 - `AUTH_TOKEN_SECRET` - [JWT secret](https://en.wikipedia.org/wiki/JSON_Web_Token#Structure)
 - `AUTH_COOKIE_SECURE` - Secure attribute on authentication cookie sent from server. Set to `true` to enable, or if `AUTH_COOKIE_SECURE` is missing, defaults to `true`.
 
 Refer to [dotenv documentation](https://github.com/motdotla/dotenv#readme) for formatting.
 
 You can define a custom auth routine in `auth.js`. See `auth.example.js` for an example. If you don't configure a `auth.js` it will use default simple `AUTH_PASSWORD` password based authentication.
+
+## Configure `users.txt`
+
+- `username:hash` pairs. If the second half of the pair is not hash (those start with $) then it automatically converts it to one. Loaded on server start.
+- You can also append `:admin` to specify that the user is an admin
 
 ## Development
 
