@@ -37,7 +37,7 @@ function writeUsers(users) {
   );
 }
 
-const users = loadUsers();
+global.users = loadUsers();
 
 // config vars
 const bypassToken = process.env.AUTH_BYPASS;
@@ -50,5 +50,40 @@ const checkAuth = (username, pass) => {
   if (user && bcrypt.compareSync(pass, user.hash)) return true;
   return false;
 };
+
+app.get('/manage', (req, res) => {
+  if (!req.user) return res.redirect('/login');
+  const user = users.get(req.user);
+  if (!user) return res.redirect('/login');
+  if (!user.groups.includes('admin')) return res.redirect('/logged-in');
+
+  return res.render('manage', {
+    user: user.name || null,
+    groups: user.groups,
+    users: Array.from(users.values()).map(({ hash, ...rest }) => rest),
+  });
+});
+
+app.post('/manage', (req, res) => {
+  if (!req.user) return res.redirect('/login');
+  const user = users.get(req.user);
+  if (!user) return res.redirect('/login');
+  if (!user.groups.includes('admin')) return res.redirect('/logged-in');
+  if (req.body['action'] === 'delete') {
+    if (req.body['user']) {
+      users.delete(req.body['user']);
+      writeUsers(users);
+    }
+  } else if (req.body['action'] === 'add') {
+    const { username, password } = req.body;
+    users.set(username, {
+      name: username,
+      hash: bcrypt.hashSync(password),
+      groups: [],
+    });
+    writeUsers(users);
+  }
+  res.redirect('/manage');
+});
 
 module.exports = checkAuth;

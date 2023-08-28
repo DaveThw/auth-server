@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 
-const app = express();
+global.app = express();
 
 // rate limiter used on auth attempts
 const apiLimiter = rateLimit({
@@ -17,51 +17,20 @@ const apiLimiter = rateLimit({
   },
 });
 
-// read .env and store in process.env
-dotenv.config();
+app.set('view engine', 'ejs');
 
-// config vars
-const port = process.env.AUTH_PORT || 3000;
-const tokenSecret = process.env.AUTH_TOKEN_SECRET;
-const defaultUser = 'user'; // default user when no username supplied
-const expiryDays = 7;
-const cookieSecure =
-  'AUTH_COOKIE_SECURE' in process.env
-    ? process.env.AUTH_COOKIE_SECURE === 'true'
-    : true;
+// logging
+app.use(morgan('dev'));
 
-// default auth function
-// can be customised by defining one in auth.js, e.g use custom back end database
-// using single password for the time being, but this could query a database etc
-let checkAuth = (user, pass) => {
-  console.log('original checkAuth - User:', user, 'Password:', pass);
-  const authPassword = process.env.AUTH_PASSWORD;
-  if (!authPassword) {
-    console.error(
-      'Misconfigured server. Environment variable AUTH_PASSWORD is not configured',
-    );
-    process.exit(1);
-  }
+// serve static files in ./public
+app.use(express.static('public'));
 
-  // check for correct user password
-  if (pass === authPassword) return true;
-  return false;
-};
+// parse cookies
+app.use(cookieParser());
 
-// load checkAuth() if defined by user in auth.js
-try {
-  customCheckAuth = require('./auth.js');
-  if (typeof customCheckAuth === 'function') checkAuth = customCheckAuth;
-} catch (ex) {
-  console.error('Failed to load auth.js:', ex);
-}
-
-if (!tokenSecret) {
-  console.error(
-    'Misconfigured server. Environment variable AUTH_TOKEN_SECRET is not configured',
-  );
-  process.exit(1);
-}
+// parse json body
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 // middleware to check auth status
 const jwtVerify = (req, res, next) => {
@@ -84,24 +53,55 @@ const jwtVerify = (req, res, next) => {
   });
 };
 
-app.set('view engine', 'ejs');
-
-// logging
-app.use(morgan('dev'));
-
-// serve static files in ./public
-app.use(express.static('public'));
-
-// parse cookies
-app.use(cookieParser());
-
-// parse json body
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-
 // check for JWT cookie from requestor
 // if there is a valid JWT, req.user is assigned
 app.use(jwtVerify);
+
+// read .env and store in process.env
+dotenv.config();
+
+// config vars
+const port = process.env.AUTH_PORT || 3000;
+const tokenSecret = process.env.AUTH_TOKEN_SECRET;
+const defaultUser = 'user'; // default user when no username supplied
+const expiryDays = 7;
+const cookieSecure =
+  'AUTH_COOKIE_SECURE' in process.env
+    ? process.env.AUTH_COOKIE_SECURE === 'true'
+    : true;
+
+// default auth function
+// can be customised by defining one in auth.js, e.g use custom back end database
+// using single password for the time being, but this could query a database etc
+let checkAuth = (user, pass) => {
+  console.log('original checkAuth - User:', user, 'Password:', pass);
+  const authPassword = process.env.AUTH_PASSWORD;
+  if (!authPassword) {
+    console.error(
+      'Misconfigured server. Environment variable AUTH_PASSWORD is not configured'
+    );
+    process.exit(1);
+  }
+
+  // check for correct user password
+  if (pass === authPassword) return true;
+  return false;
+};
+
+// load checkAuth() if defined by user in auth.js
+try {
+  customCheckAuth = require('./auth.js');
+  if (typeof customCheckAuth === 'function') checkAuth = customCheckAuth;
+} catch (ex) {
+  console.error("Failed to load auth.js:", ex)
+}
+
+if (!tokenSecret) {
+  console.error(
+    'Misconfigured server. Environment variable AUTH_TOKEN_SECRET is not configured',
+  );
+  process.exit(1);
+}
 
 // we don't need a root path, direct to login interface
 app.get('/', (req, res) => {
@@ -111,7 +111,12 @@ app.get('/', (req, res) => {
 // interface for users who are logged in
 app.get('/logged-in', (req, res) => {
   if (!req.user) return res.redirect('/login');
-  return res.render('logged-in', { user: req.user || null });
+  const user = users.get(req.user);
+  if (!user) return res.redirect('/login');
+  return res.render('logged-in', {
+    user: user.name || null,
+    groups: user.groups,
+  });
 });
 
 // login interface
