@@ -34,6 +34,7 @@ const cookieSecure =
 // can be customised by defining one in auth.js, e.g use custom back end database
 // using single password for the time being, but this could query a database etc
 let checkAuth = (user, pass) => {
+  console.log('original checkAuth - User:', user, 'Password:', pass);
   const authPassword = process.env.AUTH_PASSWORD;
   if (!authPassword) {
     console.error(
@@ -114,6 +115,7 @@ app.get('/logged-in', (req, res) => {
 
 // login interface
 app.get('/login', (req, res) => {
+  console.log("get /login - user:", req.user, "uri:", req.headers['x-original-uri']);
   // parameters from original client request
   // these could be used for validating request
   const requestUri = req.headers['x-original-uri'];
@@ -132,6 +134,7 @@ app.get('/login', (req, res) => {
 // endpoint called by NGINX sub request
 // expect JWT in cookie 'authToken'
 app.get('/auth', (req, res, next) => {
+  console.log("get /auth - user:", req.user, "uri:", req.headers['x-original-uri']);
   // parameters from original client request
   // these could be used for validating request
   const requestUri = req.headers['x-original-uri'];
@@ -162,6 +165,7 @@ app.get('/auth', (req, res, next) => {
 
 // endpoint called by login page, username and password posted as JSON body
 app.post('/login', apiLimiter, (req, res) => {
+  console.log("post /login - ", req.body);
   const { username, password } = req.body;
 
   if (checkAuth(username, password)) {
