@@ -37,4 +37,27 @@ yarn start
 `yarn` will then watch for changes within the project, and restart `auth-server` if it spots any.
 
 
-See the [main README for further details](https://github.com/DaveThw/auth-server/tree/install_notes#development), and also a [blog post by Andy Gock](https://gock.net/blog/2020/nginx-subrequest-authentication-server/).
+See the [main README for further details](https://github.com/DaveThw/auth-server#development), and also a [blog post by Andy Gock](https://gock.net/blog/2020/nginx-subrequest-authentication-server/).
+
+
+If `nginx` isn't installed, install it with:
+```
+sudo apt install nginx
+```
+
+You'll need to make changes to the `nginx` config files (probably in `\etc\nginx\sites-enabled`).  See the [main README for an example](https://github.com/DaveThw/auth-server#example-nginx-conf) - note that in order for the auth process to work everywhere, you need to include (at least) `auth_request /auth;` in each `location` block.  Once the config files are updated, test with:
+```
+sudo nginx -t
+```
+
+Then either start nginx with:
+```
+sudo service nginx start
+```
+
+Or tell it to reload its config if it's already running with:
+```
+sudo nginx -s reload
+```
+
+```
