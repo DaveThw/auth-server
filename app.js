@@ -51,7 +51,9 @@ let checkAuth = (user, pass) => {
 try {
   customCheckAuth = require('./auth.js');
   if (typeof customCheckAuth === 'function') checkAuth = customCheckAuth;
-} catch (ex) {}
+} catch (ex) {
+  console.error("Failed to load auth.js:", ex)
+}
 
 if (!tokenSecret) {
   console.error(
@@ -71,7 +73,7 @@ const jwtVerify = (req, res, next) => {
   jwt.verify(token, tokenSecret, (err, decoded) => {
     if (err) {
       // e.g malformed token, bad signature etc - clear the cookie also
-      console.log(err);
+      console.log("Bad JWT Token:", err);
       res.clearCookie('authToken');
       return res.status(403).send(err);
     }
