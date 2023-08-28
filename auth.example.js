@@ -13,7 +13,7 @@ const authPassword = process.env.AUTH_PASSWORD;
 const checkAuth = (user, pass) => {
   if (!authPassword) {
     console.error(
-      'Misconfigured server. Environment variable AUTH_PASSWORD is not configured'
+      'Misconfigured server. Environment variable AUTH_PASSWORD is not configured',
     );
     process.exit(1);
   }

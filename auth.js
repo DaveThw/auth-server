@@ -1,4 +1,4 @@
-console.log("Loading auth.js...")
+console.log('Loading auth.js...');
 
 const fs = require('fs');
 const path = require('path');

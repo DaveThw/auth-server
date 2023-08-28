@@ -38,7 +38,7 @@ let checkAuth = (user, pass) => {
   const authPassword = process.env.AUTH_PASSWORD;
   if (!authPassword) {
     console.error(
-      'Misconfigured server. Environment variable AUTH_PASSWORD is not configured'
+      'Misconfigured server. Environment variable AUTH_PASSWORD is not configured',
     );
     process.exit(1);
   }
@@ -53,12 +53,12 @@ try {
   customCheckAuth = require('./auth.js');
   if (typeof customCheckAuth === 'function') checkAuth = customCheckAuth;
 } catch (ex) {
-  console.error("Failed to load auth.js:", ex)
+  console.error('Failed to load auth.js:', ex);
 }
 
 if (!tokenSecret) {
   console.error(
-    'Misconfigured server. Environment variable AUTH_TOKEN_SECRET is not configured'
+    'Misconfigured server. Environment variable AUTH_TOKEN_SECRET is not configured',
   );
   process.exit(1);
 }
@@ -74,7 +74,7 @@ const jwtVerify = (req, res, next) => {
   jwt.verify(token, tokenSecret, (err, decoded) => {
     if (err) {
       // e.g malformed token, bad signature etc - clear the cookie also
-      console.log("Bad JWT Token:", err);
+      console.log('Bad JWT Token:', err);
       res.clearCookie('authToken');
       return res.status(403).send(err);
     }
@@ -116,7 +116,12 @@ app.get('/logged-in', (req, res) => {
 
 // login interface
 app.get('/login', (req, res) => {
-  console.log("get /login - user:", req.user, "uri:", req.headers['x-original-uri']);
+  console.log(
+    'get /login - user:',
+    req.user,
+    'uri:',
+    req.headers['x-original-uri'],
+  );
   // parameters from original client request
   // these could be used for validating request
   const requestUri = req.headers['x-original-uri'];
@@ -136,7 +141,12 @@ app.get('/login', (req, res) => {
 // endpoint called by NGINX sub request
 // expect JWT in cookie 'authToken'
 app.get('/auth', (req, res, next) => {
-  console.log("get /auth - user:", req.user, "uri:", req.headers['x-original-uri']);
+  console.log(
+    'get /auth - user:',
+    req.user,
+    'uri:',
+    req.headers['x-original-uri'],
+  );
   // parameters from original client request
   // these could be used for validating request
   const requestUri = req.headers['x-original-uri'];
@@ -167,9 +177,9 @@ app.get('/auth', (req, res, next) => {
 
 // endpoint called by login page, username and password posted as JSON body
 app.post('/login', apiLimiter, (req, res) => {
-  console.log("post /login - ", req.body);
+  console.log('post /login - ', req.body);
   const { username, password } = req.body;
-  const form = req.get('content-type') === 'application/x-www-form-urlencoded'
+  const form = req.get('content-type') === 'application/x-www-form-urlencoded';
 
   if (checkAuth(username, password)) {
     // successful auth
@@ -187,13 +197,13 @@ app.post('/login', apiLimiter, (req, res) => {
       secure: cookieSecure,
     });
     if (form) {
-      return res.redirect('/login')
+      return res.redirect('/login');
     }
     return res.send({ status: 'ok' });
   }
 
   if (form) {
-    return res.redirect('/login?status=fail')
+    return res.redirect('/login?status=fail');
   }
 
   // failed auth

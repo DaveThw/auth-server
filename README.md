@@ -19,7 +19,7 @@ Refer to this tutorial on the original author's blog:
 
 ## Configure `.env`
 
-- `AUTH_PORT` -  Listening port of application (default: 3000)
+- `AUTH_PORT` - Listening port of application (default: 3000)
 - `AUTH_PASSWORD` - Authentication password (fallback if username/password authentication doesn't work)
 - `AUTH_TOKEN_SECRET` - [JWT secret](https://en.wikipedia.org/wiki/JSON_Web_Token#Structure)
 - `AUTH_COOKIE_SECURE` - Secure attribute on authentication cookie sent from server. Set to `true` to enable, or if `AUTH_COOKIE_SECURE` is missing, defaults to `true`.

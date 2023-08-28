@@ -21,5 +21,8 @@
     "Andy Gock <andy@gock.net>",
     "Isabella Skořepová <isabella@skorepova.info>"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "prettier": "^2.3.2"
+  }
 }
