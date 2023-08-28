@@ -7,29 +7,36 @@
     <%- include('head') %>
   </head>
   <body>
-    <div class="container" id="content" style="display: none">
+    <div class="container">
       <h1>Login</h1>
-      <input type="password" name="password" id="password" />
-      <input type="submit" value="Login" id="login" />
+      <form method="POST" action="/__auth/login">
+        <label>
+          <div>Name</div>
+          <input type="text" name="username" />
+        </label>
+        <label>
+          <div>Password</div>
+          <input type="password" name="password" />
+        </label>
+        <input type="submit" value="Login" name="login" />
+      </form>
       <p id="message"></p>
     </div>
 
     <script>
-      // make content visible, hidden by default, <noscript> content will show error message for non-JS browsers.
-      const content = document.getElementById('content');
-      content.style.display = 'block';
-
       // change title
       document.title = 'Log in to ' + location.host;
 
       // post password to /auth
-      const login = (password) => {
+      const login = (body) => {
         fetch('/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password }),
+          body: JSON.stringify(body),
         })
           .then((response) => {
+            console.log("response:", response);
+
             // check for auth failure for rejected credentials
             if (response.status === 401) return false;
 
@@ -40,6 +47,8 @@
             return response.json();
           })
           .then((data) => {
+            console.log("data", data);
+
             if (data && data.status === 'ok') {
               // auth success, cookie should be set
               window.location.href = '/logged-in';
@@ -48,35 +57,24 @@
 
             // auth failure, give feedback to user
             const message = document.getElementById('message');
-            message.innerText = 'Authorisation failed';
+            message.innerText = 'Authorisation attempt failed';
+          })
+          .catch((e) => {
+            console.error(e);
+            const message = document.getElementById('message');
+            message.innerText = 'Authorisation attempt failed';
           });
       };
 
-      // handle password text field
-      const input = document.getElementById('password');
-      input.focus();
-      input.addEventListener('keyup', (e) => {
-        e.preventDefault();
-        if (e.key === 'Enter') {
-          const password = input.value;
-          input.value = ''; // clear input
-          login(password);
-        }
-      });
-
-      // handle submit / login button
-      const submit = document.getElementById('login');
-      submit.addEventListener('click', (e) => {
-        e.preventDefault();
-        const password = input.value;
-        input.value = ''; // clear input
-        login(password);
+      const form = document.querySelector('form');
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const message = document.getElementById('message');
+        message.innerText = 'Logging in...';
+        const data = new FormData(event.currentTarget);
+        const body = Object.fromEntries(data.entries());
+        login(body);
       });
     </script>
-
-    <noscript
-      >JavaScript is not detected or enabled but it is required for this
-      site.</noscript
-    >
   </body>
 </html>
