@@ -92,10 +92,20 @@ app.get('/user/', (req, res) => {
   if (!req.user) return res.redirect('/login');
   const user = users.get(req.user);
   if (!user) return res.redirect('/login');
-  const error = req.query['error'];
   return res.render('user', {
     user: user.name || null,
     groups: user.groups,
+  });
+});
+
+// interface for users who are logged in
+app.get('/user/password', (req, res) => {
+  if (!req.user) return res.redirect('/login');
+  const user = users.get(req.user);
+  if (!user) return res.redirect('/login');
+  const error = req.query['error'];
+  return res.render('password', {
+    user: user.name || null,
     message:
       error === 'empty'
         ? 'Password must not be empty'
@@ -109,24 +119,24 @@ app.get('/user/', (req, res) => {
   });
 });
 
-app.post('/user/', (req, res) => {
+app.post('/user/password', (req, res) => {
   if (!req.user) return res.redirect('/login');
   const user = users.get(req.user);
   if (!user) return res.redirect('/login');
   const { 'old-password': old, password, password2 } = req.body;
   if (!password) {
-    return res.redirect('/user/?error=empty');
+    return res.redirect('/user/password?error=empty');
   }
   if (!bcrypt.compareSync(old, user.hash)) {
-    return res.redirect('/user/?error=wrong');
+    return res.redirect('/user/password?error=wrong');
   }
   if (password !== password2) {
-    return res.redirect('/user/?error=typo');
+    return res.redirect('/user/password?error=typo');
   }
 
   users.set(user.name, { ...user, hash: bcrypt.hashSync(password) });
   writeUsers(users);
-  res.redirect('/user/?success');
+  res.redirect('/user/password?success');
 });
 
 module.exports = checkAuth;
