@@ -113,9 +113,20 @@ app.get('/logged-in', (req, res) => {
   if (!req.user) return res.redirect('/login');
   const user = users.get(req.user);
   if (!user) return res.redirect('/login');
+  const error = req.query['error'];
   return res.render('logged-in', {
     user: user.name || null,
     groups: user.groups,
+    message:
+      error === 'empty'
+        ? 'Password must not be empty'
+        : error === 'wrong'
+        ? 'Old password is incorrect'
+        : error === 'typo'
+        ? 'Passwords are not the same'
+        : 'success' in req.query
+        ? 'Password was changed successfully'
+        : null,
   });
 });
 

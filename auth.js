@@ -86,4 +86,24 @@ app.post('/manage', (req, res) => {
   res.redirect('/manage');
 });
 
+app.post('/logged-in', (req, res) => {
+  if (!req.user) return res.redirect('/login');
+  const user = users.get(req.user);
+  if (!user) return res.redirect('/login');
+  const { 'old-password': old, password, password2 } = req.body;
+  if (!password) {
+    return res.redirect('/logged-in?error=empty');
+  }
+  if (!bcrypt.compareSync(old, user.hash)) {
+    return res.redirect('/logged-in?error=wrong');
+  }
+  if (password !== password2) {
+    return res.redirect('/logged-in?error=typo');
+  }
+
+  users.set(user.name, { ...user, hash: bcrypt.hashSync(password) });
+  writeUsers(users);
+  res.redirect('/logged-in?success');
+});
+
 module.exports = checkAuth;
