@@ -42,7 +42,7 @@
           .then((data) => {
             if (data && data.status === 'ok') {
               // auth success, cookie should be set
-              window.location.href = '/logged-in';
+              window.location.reload();
               return;
             }
 
