@@ -8,30 +8,26 @@
   </head>
   <body>
     <div class="container" id="content">
-      <button id="logout">Log Out</button>
       <h1>Hello <%= user %></h1>
+      <p>You are logged in.</p>
+      <% if (groups?.length > 0) { %>
       <p>
-        <%= groups?.length === 1 ? 'You are in following group: ' : '' %>
+        <%= groups?.length === 1 ? 'You are in this group: ' : '' %>
         <!---->
-        <%= groups?.length > 1 ? 'You are in following groups: ' : '' %>
+        <%= groups?.length > 1 ? 'You are in these groups: ' : '' %>
         <!---->
-        <%= groups?.length > 0 ? groups.join(', ') : '' %>
-      </p>
-      <% if (groups.includes('admin')) { %>
-      <p>
-        <a href="manage">Manage users</a>
+        <%= groups.join(', ') %>
       </p>
       <% } %>
-      <p>You are logged in.</p>
-      <p><a href="./password">Change your password.</a></p>
-      <p>Visit <a href="/" id="link">/</a>.</p>
+      <p><a href="./password">Change your password</a></p>
+      <% if (groups.includes('admin')) { %>
+      <p><a href="./manage">Manage users</a></p>
+      <% } %>
+      <p>Return to <a href="/" id="link">/</a></p>
+      <p><a href="/logout" id="logout">Log Out</a></p>
     </div>
 
     <script>
-      // make content visible, hidden by default, <noscript> content will show error message for non-JS browsers.
-      const content = document.getElementById('content');
-      content.style.display = 'block';
-
       const logout = () => {
         fetch('/logout', {
           method: 'POST',
@@ -58,10 +54,5 @@
       visitLink.innerText = location.host;
       visitLink.href = location.protocol + '//' + location.host;
     </script>
-
-    <noscript
-      >JavaScript is not detected or enabled but it is required for this
-      site.</noscript
-    >
   </body>
 </html>
