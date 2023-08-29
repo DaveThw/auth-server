@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Logged In</title>
+    <title>User Page - <%= user %></title>
     <%- include('head') %>
   </head>
   <body>
@@ -48,9 +48,6 @@
       // make content visible, hidden by default, <noscript> content will show error message for non-JS browsers.
       const content = document.getElementById('content');
       content.style.display = 'block';
-
-      // change title
-      document.title = 'Logged in to ' + location.host;
 
       const logout = () => {
         fetch('/logout', {

@@ -55,7 +55,7 @@ app.get('/manage', (req, res) => {
   if (!req.user) return res.redirect('/login');
   const user = users.get(req.user);
   if (!user) return res.redirect('/login');
-  if (!user.groups.includes('admin')) return res.redirect('/logged-in');
+  if (!user.groups.includes('admin')) return res.redirect('/user/');
 
   return res.render('manage', {
     user: user.name || null,
@@ -68,7 +68,7 @@ app.post('/manage', (req, res) => {
   if (!req.user) return res.redirect('/login');
   const user = users.get(req.user);
   if (!user) return res.redirect('/login');
-  if (!user.groups.includes('admin')) return res.redirect('/logged-in');
+  if (!user.groups.includes('admin')) return res.redirect('/user/');
   if (req.body['action'] === 'delete') {
     const target = users.get(req.body['user']);
     if (target && !target.groups.includes('admin')) {
@@ -87,24 +87,46 @@ app.post('/manage', (req, res) => {
   res.redirect('/manage');
 });
 
-app.post('/logged-in', (req, res) => {
+// interface for users who are logged in
+app.get('/user/', (req, res) => {
+  if (!req.user) return res.redirect('/login');
+  const user = users.get(req.user);
+  if (!user) return res.redirect('/login');
+  const error = req.query['error'];
+  return res.render('user', {
+    user: user.name || null,
+    groups: user.groups,
+    message:
+      error === 'empty'
+        ? 'Password must not be empty'
+        : error === 'wrong'
+        ? 'Old password is incorrect'
+        : error === 'typo'
+        ? 'Passwords are not the same'
+        : 'success' in req.query
+        ? 'Password was changed successfully'
+        : null,
+  });
+});
+
+app.post('/user/', (req, res) => {
   if (!req.user) return res.redirect('/login');
   const user = users.get(req.user);
   if (!user) return res.redirect('/login');
   const { 'old-password': old, password, password2 } = req.body;
   if (!password) {
-    return res.redirect('/logged-in?error=empty');
+    return res.redirect('/user/?error=empty');
   }
   if (!bcrypt.compareSync(old, user.hash)) {
-    return res.redirect('/logged-in?error=wrong');
+    return res.redirect('/user/?error=wrong');
   }
   if (password !== password2) {
-    return res.redirect('/logged-in?error=typo');
+    return res.redirect('/user/?error=typo');
   }
 
   users.set(user.name, { ...user, hash: bcrypt.hashSync(password) });
   writeUsers(users);
-  res.redirect('/logged-in?success');
+  res.redirect('/user/?success');
 });
 
 module.exports = checkAuth;

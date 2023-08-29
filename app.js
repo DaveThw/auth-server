@@ -111,23 +111,7 @@ app.get('/', (req, res) => {
 // interface for users who are logged in
 app.get('/logged-in', (req, res) => {
   if (!req.user) return res.redirect('/login');
-  const user = users.get(req.user);
-  if (!user) return res.redirect('/login');
-  const error = req.query['error'];
-  return res.render('logged-in', {
-    user: user.name || null,
-    groups: user.groups,
-    message:
-      error === 'empty'
-        ? 'Password must not be empty'
-        : error === 'wrong'
-        ? 'Old password is incorrect'
-        : error === 'typo'
-        ? 'Passwords are not the same'
-        : 'success' in req.query
-        ? 'Password was changed successfully'
-        : null,
-  });
+  return res.render('logged-in', { user: req.user || null });
 });
 
 // login interface
@@ -145,7 +129,7 @@ app.get('/login', (req, res) => {
   const host = req.headers['x-original-host'];
 
   // check if user is already logged in
-  if (req.user) return res.redirect('/logged-in');
+  if (req.user) return res.redirect('/user/');
 
   // user not logged in, show login interface
   return res.render('login', {
