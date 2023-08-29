@@ -51,42 +51,6 @@ const checkAuth = (username, pass) => {
   return false;
 };
 
-app.get('/manage', (req, res) => {
-  if (!req.user) return res.redirect('/login');
-  const user = users.get(req.user);
-  if (!user) return res.redirect('/login');
-  if (!user.groups.includes('admin')) return res.redirect('/user/');
-
-  return res.render('manage', {
-    user: user.name || null,
-    groups: user.groups,
-    users: Array.from(users.values()).map(({ hash, ...rest }) => rest),
-  });
-});
-
-app.post('/manage', (req, res) => {
-  if (!req.user) return res.redirect('/login');
-  const user = users.get(req.user);
-  if (!user) return res.redirect('/login');
-  if (!user.groups.includes('admin')) return res.redirect('/user/');
-  if (req.body['action'] === 'delete') {
-    const target = users.get(req.body['user']);
-    if (target && !target.groups.includes('admin')) {
-      users.delete(target.name);
-      writeUsers(users);
-    }
-  } else if (req.body['action'] === 'add') {
-    const { username, password } = req.body;
-    users.set(username, {
-      name: username,
-      hash: bcrypt.hashSync(password),
-      groups: [],
-    });
-    writeUsers(users);
-  }
-  res.redirect('/manage');
-});
-
 // interface for users who are logged in
 app.get('/user/', (req, res) => {
   if (!req.user) return res.redirect('/login');
@@ -137,6 +101,42 @@ app.post('/user/password', (req, res) => {
   users.set(user.name, { ...user, hash: bcrypt.hashSync(password) });
   writeUsers(users);
   res.redirect('/user/password?success');
+});
+
+app.get('/user/manage', (req, res) => {
+  if (!req.user) return res.redirect('/login');
+  const user = users.get(req.user);
+  if (!user) return res.redirect('/login');
+  if (!user.groups.includes('admin')) return res.redirect('/user/');
+
+  return res.render('manage', {
+    user: user.name || null,
+    groups: user.groups,
+    users: Array.from(users.values()).map(({ hash, ...rest }) => rest),
+  });
+});
+
+app.post('/user/manage', (req, res) => {
+  if (!req.user) return res.redirect('/login');
+  const user = users.get(req.user);
+  if (!user) return res.redirect('/login');
+  if (!user.groups.includes('admin')) return res.redirect('/user/');
+  if (req.body['action'] === 'delete') {
+    const target = users.get(req.body['user']);
+    if (target && !target.groups.includes('admin')) {
+      users.delete(target.name);
+      writeUsers(users);
+    }
+  } else if (req.body['action'] === 'add') {
+    const { username, password } = req.body;
+    users.set(username, {
+      name: username,
+      hash: bcrypt.hashSync(password),
+      groups: [],
+    });
+    writeUsers(users);
+  }
+  res.redirect('/user/manage');
 });
 
 module.exports = checkAuth;
