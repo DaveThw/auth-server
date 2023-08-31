@@ -67,19 +67,22 @@ app.get('/user/password', (req, res) => {
   if (!req.user) return res.redirect('/login');
   const user = users.get(req.user);
   if (!user) return res.redirect('/login');
-  const error = req.query['error'];
+  const result = req.query['result'];
+  console.log('get /user/password - result: ', result);
   return res.render('password', {
     user: user.name || null,
     message:
-      error === 'empty'
-        ? 'Password must not be empty'
-        : error === 'wrong'
+      result === 'empty'
+        ? 'New password must not be empty'
+        : result === 'wrong'
         ? 'Old password is incorrect'
-        : error === 'typo'
-        ? 'Passwords are not the same'
-        : 'success' in req.query
+        : result === 'typo'
+        ? 'New passwords are not the same'
+        : result === 'success'
         ? 'Password was changed successfully'
-        : null,
+        : result === undefined
+        ? null
+        : 'Unrecognised result!',
   });
 });
 
@@ -87,20 +90,30 @@ app.post('/user/password', (req, res) => {
   if (!req.user) return res.redirect('/login');
   const user = users.get(req.user);
   if (!user) return res.redirect('/login');
+  console.log('post /user/password -', req.body);
+  const form = req.get('content-type') === 'application/x-www-form-urlencoded';
   const { 'old-password': old, password, password2 } = req.body;
+  result = 'success';
   if (!password) {
-    return res.redirect('/user/password?error=empty');
-  }
-  if (!bcrypt.compareSync(old, user.hash)) {
-    return res.redirect('/user/password?error=wrong');
-  }
-  if (password !== password2) {
-    return res.redirect('/user/password?error=typo');
+    result = 'empty';
+  } else if (!bcrypt.compareSync(old, user.hash)) {
+    result = 'wrong';
+  } else if (password !== password2) {
+    result = 'typo';
+  } else {
+    result = 'success';
   }
 
-  users.set(user.name, { ...user, hash: bcrypt.hashSync(password) });
-  writeUsers(users);
-  res.redirect('/user/password?success');
+  if (result === 'success') {
+    users.set(user.name, { ...user, hash: bcrypt.hashSync(password) });
+    writeUsers(users);
+  }
+
+  if (form) {
+    return res.redirect('/user/password?result=' + result);
+  } else {
+    return res.send({ status: result });
+  }
 });
 
 app.get('/user/manage', (req, res) => {
