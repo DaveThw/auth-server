@@ -9,7 +9,7 @@
   <body>
     <div class="container">
       <h1>Login</h1>
-      <form method="POST" action="/__auth/login">
+      <form method="POST" action="/login">
         <label>
           <div>Name</div>
           <input type="text" name="username" />
@@ -25,7 +25,8 @@
 
     <script>
       // change title
-      document.title = 'Log in to ' + location.host;
+      document.title = 'Login to ' + location.host;
+      document.getElementsByTagName('h1')[0].innerText = 'Login to ' + location.host;
 
       // post password to /auth
       const login = (body) => {
