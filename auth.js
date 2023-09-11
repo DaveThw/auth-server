@@ -42,7 +42,10 @@ global.users = loadUsers();
 // config vars
 const bypassToken = process.env.AUTH_BYPASS;
 
+//  req.user => user name (string), extracted from JWT cookie
 // user = users.get(req.user)
+//  user => { hash: <password hash>, groups: [<list of any groups>], name: <user name> }
+
 
 const checkAuth = (username, pass) => {
   console.log('auth.js checkAuth - User:', username, 'Password:', pass);
@@ -53,6 +56,7 @@ const checkAuth = (username, pass) => {
 
 // interface for users who are logged in
 app.get('/user/', (req, res) => {
+  console.log('get /user/ - req.user:', req.user);
   if (!req.user) return res.redirect('/login');
   const user = users.get(req.user);
   if (!user) return res.redirect('/login');
@@ -117,6 +121,7 @@ app.post('/user/password', (req, res) => {
 });
 
 app.get('/user/manage', (req, res) => {
+  console.log('get /user/manage - req.user:', req.user);
   if (!req.user) return res.redirect('/login');
   const user = users.get(req.user);
   if (!user) return res.redirect('/login');
@@ -130,6 +135,7 @@ app.get('/user/manage', (req, res) => {
 });
 
 app.post('/user/manage', (req, res) => {
+  console.log('post /user/manage -', req.body );
   if (!req.user) return res.redirect('/login');
   const user = users.get(req.user);
   if (!user) return res.redirect('/login');
