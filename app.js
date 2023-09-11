@@ -168,6 +168,9 @@ app.get('/auth', (req, res, next) => {
       secure: cookieSecure,
     });
 
+    // pass username back in separate header
+    res.set('X-Auth-User', req.user);
+
     return res.sendStatus(200);
   } else {
     // not authenticated
